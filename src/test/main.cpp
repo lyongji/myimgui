@@ -26,7 +26,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     return SDL_APP_SUCCESS; /* 结束程序，向操作系统报告成功。 */
   }
 
-  应用::获取实例().刷新显示();
+  应用::获取实例().更新();
 
   return SDL_APP_CONTINUE; /* 继续执行程序！ */
 }

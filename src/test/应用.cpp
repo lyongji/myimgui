@@ -1,10 +1,10 @@
 #include "应用.hpp"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_stdinc.h"
+#include "icon/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
-
 #include <memory>
 
 std::unique_ptr<应用> 应用::_应用实例 = nullptr;
@@ -23,7 +23,7 @@ void 应用::销毁实例() { _应用实例.reset(); }
 bool 应用::是否已退出() { return _是否退出; }
 
 应用::应用() {
-  _帧延迟纳秒值 = 1.0e9 / _帧率值;
+  _帧延迟纳秒 = 1.0e9 / _目标帧率;
 
   // 初始化SDL
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO);
@@ -62,19 +62,19 @@ bool 应用::是否已退出() { return _是否退出; }
   ImGui_ImplSDL3_InitForSDLRenderer(_窗口, _渲染器);
   ImGui_ImplSDLRenderer3_Init(_渲染器);
 
-  // 加载字体
+  // 设置字体
   float 字体大小 = 20.0f;
-  ImFont *font = io.Fonts->AddFontFromFileTTF(
+  ImFont *字体 = io.Fonts->AddFontFromFileTTF(
       "./assets/MapleMono-NF-CN-Regular.ttf", 字体大小);
-  // // 合并字体
-  // float 图标字体大小 = 字体大小 * 2.0f / 3.0f;
+  // 合并图标字体
+  float 图标字体大小 = 字体大小 * 2.0f / 3.0f;
   // ImFontConfig 图标配置;
   // 图标配置.MergeMode = true;
   // 图标配置.PixelSnapH = true;
   // 图标配置.GlyphMinAdvanceX = 图标字体大小;
-  // io.Fonts->AddFontFromFileTTF("./assets/fa-solid-900.ttf", 图标字体大小,
-  //                              &图标配置);
-  IM_ASSERT(font != nullptr);
+  ImFont *字体2 =
+      io.Fonts->AddFontFromFileTTF("./assets/fa-solid-900.ttf", 字体大小);
+  IM_ASSERT(字体 != nullptr);
 }
 void 应用::处理事件(SDL_Event &事件) {
 
@@ -85,7 +85,7 @@ void 应用::处理事件(SDL_Event &事件) {
       事件.window.windowID == SDL_GetWindowID(_窗口))
     _是否退出 = true;
 }
-void 应用::刷新显示() {
+void 应用::更新() {
 
   auto 起始 = SDL_GetTicksNS();
 
@@ -94,6 +94,10 @@ void 应用::刷新显示() {
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
   /* 绘制 */
+
+  ImGui::Begin(ICON_FA_BLENDER "窗口");
+  ImGui::Text(ICON_FA_PEN "Hello, world!");
+  ImGui::End();
 
   ImGui::ShowDemoWindow();
 
@@ -109,10 +113,10 @@ void 应用::刷新显示() {
   // 帧率控制
   auto 结束 = SDL_GetTicksNS(); // 获取当前时间
   auto 耗时 = (结束 - 起始);    // 计算耗时
-  if (耗时 < _帧延迟纳秒值) {
+  if (耗时 < _帧延迟纳秒) {
     // 如果耗时小于帧延迟，则等待剩余时间
     SDL_DelayNS((_帧间隔时长 - 耗时) / 1000000); // ns纳秒
-    _帧间隔时长 = _帧延迟纳秒值 / 1.0e9;         // 将帧延迟转换为秒
+    _帧间隔时长 = _帧延迟纳秒 / 1.0e9;           // 将帧延迟转换为秒
   } else {
     // 如果耗时大于帧延迟，则调整帧间隔
     _帧间隔时长 = 耗时 / 1.0e9; // 将耗时转换为秒
