@@ -14,7 +14,7 @@ add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm")
 add_links("SDL3_mixer")
 add_linkdirs("/lib")
 
-add_includedirs("include/","include/icon/")
+add_includedirs("include/","include/icon/","include/imsearch/")
  
 includes("**/xmake.lua")--搜索目录下所有子构建
 

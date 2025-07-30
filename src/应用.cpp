@@ -5,9 +5,16 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
+#include "imsearch/imsearch.h"
 #include <memory>
 
 std::unique_ptr<应用> 应用::_应用实例 = nullptr;
+static const char *sImguiExtensions[] = {
+    "选项1", "选项2", "选项3",
+    // 可以添加更多选项
+};
+
+static const char *选定字符 = sImguiExtensions[0];
 
 void 应用::初始化() {
   if (!_应用实例) {
@@ -45,6 +52,7 @@ bool 应用::是否已退出() { return _是否退出; }
   // 设置Dear ImGui 环境
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
+  ImSearch::CreateContext(); // 初始化搜索
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // 启用键盘控制
@@ -72,7 +80,7 @@ bool 应用::是否已退出() { return _是否退出; }
   // 图标配置.MergeMode = true;
   // 图标配置.PixelSnapH = true;
   // 图标配置.GlyphMinAdvanceX = 图标字体大小;
-  ImFont *字体2 =
+  ImFont *图标字体 =
       io.Fonts->AddFontFromFileTTF("./assets/fa-solid-900.ttf", 字体大小);
   IM_ASSERT(字体 != nullptr);
 }
@@ -96,10 +104,29 @@ void 应用::更新() {
   /* 绘制 */
 
   ImGui::Begin(ICON_FA_BLENDER "窗口");
-  ImGui::Text(ICON_FA_PEN "Hello, world!");
+  ImGui::Text(ICON_FA_PEN " 帧率: %f 每秒", 1.0 / _帧间隔时长);
   ImGui::End();
 
+  ImSearch::ShowDemoWindow();
   ImGui::ShowDemoWindow();
+
+  // 搜索示例
+  if (ImGui::BeginCombo("##Extensions", 选定字符)) {
+    if (ImSearch::BeginSearch()) {
+      ImSearch::SearchBar();
+
+      for (const char *extension : sImguiExtensions) {
+        ImSearch::SearchableItem(extension, [&](const char *名称) {
+          const bool 是选中的 = 名称 == 选定字符;
+          if (ImGui::Selectable(名称, 是选中的)) {
+            选定字符 = 名称;
+          }
+        });
+      }
+      ImSearch::EndSearch();
+    }
+    ImGui::EndCombo();
+  }
 
   SDL_SetRenderDrawColor(_渲染器, 0, 0, 0, 255); // 设置渲染背景色
   SDL_RenderClear(_渲染器);                      // 清屏
@@ -129,6 +156,7 @@ void 应用::更新() {
   // 是你的SDL_AppQuit()函数
   ImGui_ImplSDLRenderer3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
+  ImSearch::DestroyContext();
   ImGui::DestroyContext();
 
   SDL_DestroyRenderer(_渲染器);
