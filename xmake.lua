@@ -10,12 +10,28 @@ add_requires("libsdl3_ttf", { configs = { runtimes = "MDd" } })
 add_requires("glm",{configs= {cxx_standard = "20" } })
 add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm")
 
---添加SDL3_mixer
-add_links("SDL3_mixer")
+
+add_links("SDL3_mixer")--链接SDL3_mixer.lib
+add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
 add_linkdirs("/lib")
 
-add_includedirs("include/","include/icon/","include/imsearch/")
- 
+add_includedirs("include/","include/icon/","include/imsearch/","include/ib_pinyin/")
+
+target("imsearch")
+    set_kind("static")
+    add_files("./include/imsearch/*.cpp")
+
+target("ibtest")--测试
+    set_kind("binary")
+    add_files("./include/ib_pinyin/ibtest.c")
+ -- 添加Windows系统库链接
+    if is_plat("windows") then
+        add_links("ws2_32", "userenv", "advapi32", "ntdll")
+    elseif is_plat("linux") then
+        add_links("pthread", "dl", "m", "rt")
+    end
+
+
 includes("**/xmake.lua")--搜索目录下所有子构建
 
 --
