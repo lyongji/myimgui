@@ -7,14 +7,16 @@
 #include "imgui_impl_sdlrenderer3.h"
 #include "imsearch/imsearch.h"
 #include <memory>
+#include <string>
+#include <vector>
 
 std::unique_ptr<应用> 应用::_应用实例 = nullptr;
-static const char *sImguiExtensions[] = {
-    "选项1", "选项2", "选项3",
-    // 可以添加更多选项
+static const std::vector<std::string> 条目表{
+    "选项1",
+    "一二三",
+    "选项a",
 };
-
-static const char *选定字符 = sImguiExtensions[0];
+static std::string 选定字符 = 条目表.at(0);
 
 void 应用::初始化() {
   if (!_应用实例) {
@@ -111,15 +113,14 @@ void 应用::更新() {
   ImGui::ShowDemoWindow();
 
   // 搜索示例
-  if (ImGui::BeginCombo("##Extensions", 选定字符)) {
+  if (ImGui::BeginCombo("##Extensions", 选定字符.c_str())) {
     if (ImSearch::BeginSearch()) {
-      ImSearch::SearchBar();
-
-      for (const char *extension : sImguiExtensions) {
-        ImSearch::SearchableItem(extension, [&](const char *名称) {
-          const bool 是选中的 = 名称 == 选定字符;
-          if (ImGui::Selectable(名称, 是选中的)) {
-            选定字符 = 名称;
+      ImSearch::SearchBar("搜索栏");
+      for (auto 条目项 : 条目表) {
+        ImSearch::SearchableItem(条目项.c_str(), [&](const char *条目名) {
+          const bool 是否选中 = 条目名 == 选定字符.c_str();
+          if (ImGui::Selectable(条目名, 是否选中)) {
+            选定字符 = 条目名;
           }
         });
       }
