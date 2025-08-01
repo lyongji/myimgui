@@ -15,22 +15,14 @@ add_links("SDL3_mixer")--链接SDL3_mixer.lib
 add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
 add_linkdirs("/lib")
 
-add_includedirs("include/","include/icon/","include/imsearch/","include/ib_pinyin/")
+add_includedirs("include/","include/icon/","include/imsearch/","include/ib_pinyin/","include/imguiNodeEditor/")
 
-target("imsearch")
+target("imsearch") --创建imsearch库
     set_kind("static")
     add_files("./include/imsearch/*.cpp")
-
-target("ibtest")--测试
-    set_kind("binary")
-    -- add_files("./include/ib_pinyin/ibtest.c")
-    add_files("./include/ib_pinyin/ibtestcpp.cpp")
- -- 添加Windows系统库链接
-    if is_plat("windows") then
-        add_links("ws2_32", "userenv", "advapi32", "ntdll")
-    elseif is_plat("linux") then
-        add_links("pthread", "dl", "m", "rt")
-    end
+target("imguiNodeEditor") --创建imguiNodeEditor库   
+    set_kind("static")
+    add_files("./include/imguiNodeEditor/*.cpp")
 
 
 includes("**/xmake.lua")--搜索目录下所有子构建
