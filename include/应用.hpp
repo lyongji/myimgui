@@ -13,15 +13,20 @@ public:
   static 应用 &获取实例();
 
   应用();
+  ~应用();
+
   应用(const 应用 &) = delete;
   应用 &operator=(const 应用 &) = delete;
   应用(应用 &&) = delete;
   应用 &operator=(应用 &&) = delete;
-  ~应用();
+
+  void 运行();
 
   void 处理事件(SDL_Event &事件);
 
-  void 更新();
+  void 更新迭代(float 帧间隔时长);
+
+  void 绘制画面();
 
   bool 是否已退出();
 

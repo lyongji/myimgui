@@ -3,10 +3,17 @@
 #include "应用.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <Windows.h>
+
+// 设置控制台编码
+void 设置控制台编码_utf8() {
+  SetConsoleOutputCP(CP_UTF8);
+  SetConsoleCP(CP_UTF8);
+}
 
 /* 此函数在启动时运行一次。 */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
-
+  设置控制台编码_utf8();
   应用::初始化();
   应用::获取实例();
   return SDL_APP_CONTINUE; /* 继续执行程序！ */
@@ -26,7 +33,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     return SDL_APP_SUCCESS; /* 结束程序，向操作系统报告成功。 */
   }
 
-  应用::获取实例().更新();
+  应用::获取实例().运行();
 
   return SDL_APP_CONTINUE; /* 继续执行程序！ */
 }

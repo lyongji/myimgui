@@ -4,11 +4,11 @@ set_languages("cxx23")
 set_encodings("utf-8")
 
 add_requires("imgui v1.92.1-docking",{configs= {sdl3 = true ,sdl3_renderer = true } })
-add_requires("libsdl3")
-add_requires("libsdl3_image")
+add_requires("libsdl3","libsdl3_image")
 add_requires("libsdl3_ttf", { configs = { runtimes = "MDd" } })
+add_requires("spdlog")
 add_requires("glm",{configs= {cxx_standard = "20" } })
-add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm")
+add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm","spdlog")
 
 
 add_links("SDL3_mixer")--链接SDL3_mixer.lib

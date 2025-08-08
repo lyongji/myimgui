@@ -1,11 +1,11 @@
 #include "应用.hpp"
-#include "SDL3/SDL_log.h"
 #include "SDL3/SDL_stdinc.h"
 #include "icon/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include "imsearch/imsearch.h"
+#include "spdlog/spdlog.h"
 #include <memory>
 
 std::unique_ptr<应用> 应用::_应用实例 = nullptr;
@@ -13,8 +13,9 @@ std::unique_ptr<应用> 应用::_应用实例 = nullptr;
 void 应用::初始化() {
   if (!_应用实例) {
     _应用实例 = std::unique_ptr<应用>(new 应用());
+    spdlog::info("应用初始化成功");
   } else {
-    SDL_Log("应用已经初始化");
+    spdlog::info("应用已初始化");
   }
 }
 应用 &应用::获取实例() { return *_应用实例; }
@@ -65,17 +66,25 @@ bool 应用::是否已退出() { return _是否退出; }
   ImGui_ImplSDLRenderer3_Init(_渲染器);
 
   // 设置字体
-  float 字体大小 = 20.0f;
+  static constexpr int 字体大小 = 20;
+  // 1. 加载主字体（排除图标范围）
+  static const ImWchar 排除范围[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+  ImFontConfig 主字体配置;
+  主字体配置.GlyphExcludeRanges = 排除范围; // 排除图标范围
+
   ImFont *字体 = io.Fonts->AddFontFromFileTTF(
-      "./assets/MapleMono-NF-CN-Regular.ttf", 字体大小);
+      "./assets/MapleMono-NF-CN-Regular.ttf", 字体大小, &主字体配置);
   // 合并图标字体
+  // 合并图标字体时需指定范围
+  static const ImWchar 图标范围[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
   float 图标字体大小 = 字体大小 * 2.0f / 3.0f;
-  // ImFontConfig 图标配置;
-  // 图标配置.MergeMode = true;
-  // 图标配置.PixelSnapH = true;
-  // 图标配置.GlyphMinAdvanceX = 图标字体大小;
-  ImFont *图标字体 =
-      io.Fonts->AddFontFromFileTTF("./assets/fa-solid-900.ttf", 字体大小);
+  ImFontConfig 图标配置;
+  图标配置.MergeMode = true;
+  图标配置.GlyphOffset.y = 1.0f;
+  图标配置.GlyphMinAdvanceX = 图标字体大小; // 使图标水平对齐
+  图标配置.GlyphRanges = 图标范围;          // 指定图标范围
+  ImFont *图标字体 = io.Fonts->AddFontFromFileTTF("./assets/fa-solid-900.ttf",
+                                                  字体大小, &图标配置);
   IM_ASSERT(字体 != nullptr);
 }
 void 应用::处理事件(SDL_Event &事件) {
@@ -87,9 +96,7 @@ void 应用::处理事件(SDL_Event &事件) {
       事件.window.windowID == SDL_GetWindowID(_窗口))
     _是否退出 = true;
 }
-void 应用::更新() {
-
-  auto 起始 = SDL_GetTicksNS();
+void 应用::更新迭代(float 帧间隔时长) {
 
   // 开始Dear ImGui帧
   ImGui_ImplSDLRenderer3_NewFrame();
@@ -97,8 +104,8 @@ void 应用::更新() {
   ImGui::NewFrame();
   /* 绘制 */
 
-  ImGui::Begin(ICON_FA_BLENDER "窗口");
-  ImGui::Text(ICON_FA_PEN " 帧率: %f 每秒", 1.0 / _帧间隔时长);
+  ImGui::Begin(ICON_FA_BLENDER "窗口" ICON_FA_PEN "应用程序");
+  ImGui::Text(ICON_FA_PEN " 帧率: %f 每秒", 1.0 / 帧间隔时长);
   ImGui::End();
 
   ImSearch::ShowDemoWindow(); // 显示搜索示例窗口
@@ -107,11 +114,20 @@ void 应用::更新() {
   SDL_SetRenderDrawColor(_渲染器, 0, 0, 0, 255); // 设置渲染背景色
   SDL_RenderClear(_渲染器);                      // 清屏
 
-  /* 绘制 */
   // 渲染呈现
   ImGui::Render();
+}
+
+void 应用::绘制画面() {
   ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), _渲染器);
   SDL_RenderPresent(_渲染器); // 渲染
+}
+
+void 应用::运行() {
+  auto 起始 = SDL_GetTicksNS();
+
+  更新迭代(_帧间隔时长);
+  绘制画面();
 
   // 帧率控制
   auto 结束 = SDL_GetTicksNS(); // 获取当前时间
