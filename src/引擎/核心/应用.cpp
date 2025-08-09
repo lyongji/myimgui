@@ -5,7 +5,7 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include "imsearch/imsearch.h"
-#include "spdlog/spdlog.h"
+#include "日志.hpp"
 #include <memory>
 
 std::unique_ptr<应用> 应用::_应用实例 = nullptr;
@@ -13,9 +13,9 @@ std::unique_ptr<应用> 应用::_应用实例 = nullptr;
 void 应用::初始化() {
   if (!_应用实例) {
     _应用实例 = std::unique_ptr<应用>(new 应用());
-    spdlog::info("应用初始化成功");
+    记录信息("应用初始化成功。");
   } else {
-    spdlog::info("应用已初始化");
+    记录信息("应用已初始化过。");
   }
 }
 应用 &应用::获取实例() { return *_应用实例; }
@@ -25,7 +25,6 @@ void 应用::销毁实例() { _应用实例.reset(); }
 bool 应用::是否已退出() { return _是否退出; }
 
 应用::应用() {
-  _帧延迟纳秒 = 1.0e9 / _目标帧率;
 
   // 初始化SDL
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO);
@@ -124,23 +123,9 @@ void 应用::绘制画面() {
 }
 
 void 应用::运行() {
-  auto 起始 = SDL_GetTicksNS();
 
-  更新迭代(_帧间隔时长);
+  更新迭代(0);
   绘制画面();
-
-  // 帧率控制
-  auto 结束 = SDL_GetTicksNS(); // 获取当前时间
-  auto 耗时 = (结束 - 起始);    // 计算耗时
-  if (耗时 < _帧延迟纳秒) {
-    // 如果耗时小于帧延迟，则等待剩余时间
-    SDL_DelayNS((_帧间隔时长 - 耗时) / 1000000); // ns纳秒
-    _帧间隔时长 = _帧延迟纳秒 / 1.0e9;           // 将帧延迟转换为秒
-  } else {
-    // 如果耗时大于帧延迟，则调整帧间隔
-    _帧间隔时长 = 耗时 / 1.0e9; // 将耗时转换为秒
-  }
-  // SDL_Log("帧率: %f 每秒", 1.0 / _帧间隔时长);
 }
 
 应用::~应用() {
