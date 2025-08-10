@@ -2,6 +2,8 @@
 
 #include "SDL3/SDL_stdinc.h"
 
+namespace 引擎::核心 {
+
 /*
  * 管理游戏循环时间,计算帧间时间差(delta time)。
  *
@@ -57,3 +59,4 @@ private:
    */
   void 限制帧率(float 当前帧已执行时长);
 };
+} // namespace 引擎::核心

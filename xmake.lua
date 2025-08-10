@@ -16,7 +16,7 @@ add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
 add_linkdirs("/lib")
 
 add_includedirs("include/","include/icon/","include/imsearch/","include/ib_pinyin/","include/imguiNodeEditor/")
-add_includedirs("src/引擎/核心")
+add_includedirs("src/引擎","src/引擎/核心","src/引擎/资源")
 
 target("imsearch") --创建imsearch库
     set_kind("static")

@@ -1,10 +1,9 @@
 #include "时间.hpp"
-#include "SDL3/SDL_Timer.h"
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_timer.h"
 #include "日志.hpp"
-#include <cstdint>
 
+namespace 引擎 ::核心 {
 时间::时间() {
   // 初始化为当前时间点,防止第一帧时间差过大
   _上帧时间点 = SDL_GetTicksNS();
@@ -24,6 +23,36 @@ void 时间::更新() {
   // 记录离开 更新() 的时间点
   auto _上帧时间点 = SDL_GetTicksNS(); // 获取当前时间
 }
+void 时间::设置时间缩放(double 缩放) {
+  if (缩放 <= 0.0) {
+    记录错误("时间缩放必须≥0,限制到0");
+    _时间缩放 = 0.0;
+  }
+  _时间缩放 = 缩放;
+}
+double 时间::获取时间缩放() const { return _时间缩放; }
+
+double 时间::获取帧间时长() const { return _帧间时长 * _时间缩放; }
+double 时间::获取无缩放帧间时长() const { return _帧间时长; }
+
+void 时间::设置目标帧率(int fps) {
+  if (fps < 0) {
+    记录错误("目标帧率不能小于0;默认设置为0(无限制)");
+    _目标帧率 = 0;
+  } else {
+    _目标帧率 = fps;
+  }
+
+  if (fps > 0) {
+    _目标每帧时长 = 1.0 / static_cast<double>(_目标帧率);
+    记录信息("目标帧率设置为：{} 每帧时长：{:.6f}", _目标帧率, _目标每帧时长);
+  } else {
+    _目标每帧时长 = 0.0;
+    记录信息("目标帧率设置为：无限制");
+  }
+}
+
+int 时间::获取目标帧率() const { return _目标帧率; }
 
 void 时间::限制帧率(float 当前帧已执行时长) {
   // 如果当前帧耗时小于目标帧间隔,则等待剩余时间
@@ -34,3 +63,5 @@ void 时间::限制帧率(float 当前帧已执行时长) {
     _帧间时长 = static_cast<double>(SDL_GetTicksNS() - _上帧时间点) / 1.0e9;
   }
 }
+
+} // namespace 引擎::核心
