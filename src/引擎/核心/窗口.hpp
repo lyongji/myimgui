@@ -16,6 +16,13 @@ public:
   glm::ivec2 获取窗口宽高() const;
 
   SDL_Window *获取窗口();
+  void 显示();
+  void 隐藏();
+  void 最小化();
+  void 最大化();
+  void 恢复();
+  void 设置全屏();
+  void 居中();
 
 private:
   SDL_Window *_窗口{};

@@ -40,8 +40,11 @@ void 渲染器::提交渲染() { SDL调用(SDL_RenderPresent(_渲染器)); }
 SDL_Renderer *渲染器::获取渲染器() const { return _渲染器; }
 
 void 渲染器::设置渲染颜色(const 颜色 &渲染颜色) {
-  SDL调用(SDL_SetRenderDrawColor(_渲染器, 渲染颜色.r * 255, 渲染颜色.g * 255,
-                                 渲染颜色.b * 255, 渲染颜色.a * 255));
+  SDL调用(SDL_SetRenderDrawColor(_渲染器, 渲染颜色.r() * 255,
+                                 渲染颜色.g() * 255, 渲染颜色.b() * 255,
+                                 渲染颜色.a() * 255));
 }
-
+void 渲染器::设置混合模式(SDL_BlendMode 模式) {
+  SDL_SetRenderDrawBlendMode(_渲染器, 模式);
+}
 } // namespace 引擎::核心

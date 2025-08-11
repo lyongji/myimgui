@@ -3,8 +3,6 @@
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_video.h"
 #include "imgui_impl_sdl3.h"
-#include "时间.hpp"
-#include "窗口.hpp"
 #include <SDL3/SDL.h>
 #include <memory>
 
@@ -12,20 +10,23 @@
 
 namespace 引擎::核心 {
 class 时间;
-}
+class 窗口;
+class 渲染器;
+} // namespace 引擎::核心
 
 namespace 引擎::核心 {
 class 应用 final {
 private:
   static std::unique_ptr<应用> _应用实例;
   // SDL_Window *_窗口;
-  SDL_Renderer *_渲染器;
+  // SDL_Renderer *_渲染器;
   bool _是否退出 = false;
   float _显示比例 = 1.0f; // 显示比例，用于缩放窗口
 
   // 各模块的指针，在初始化()中创建
   std::unique_ptr<引擎::核心::时间> _时间;
   std::unique_ptr<引擎::核心::窗口> _窗口;
+  std::unique_ptr<引擎::核心::渲染器> _渲染器;
 
 public:
   [[nodiscard]] static bool 初始化();

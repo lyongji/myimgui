@@ -27,5 +27,13 @@ glm::ivec2 窗口::获取窗口宽高() const {
 }
 
 SDL_Window *窗口::获取窗口() { return _窗口; }
-
+void 窗口::显示() { SDL_ShowWindow(_窗口); }
+void 窗口::隐藏() { SDL_HideWindow(_窗口); }
+void 窗口::最小化() { SDL_MinimizeWindow(_窗口); }
+void 窗口::最大化() { SDL_MaximizeWindow(_窗口); }
+void 窗口::恢复() { SDL_RestoreWindow(_窗口); }
+void 窗口::设置全屏() { SDL_SetWindowFullscreen(_窗口, SDL_WINDOW_FULLSCREEN); }
+void 窗口::居中() {
+  SDL_SetWindowPosition(_窗口, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+}
 } // namespace 引擎::核心

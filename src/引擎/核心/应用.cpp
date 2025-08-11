@@ -8,6 +8,10 @@
 #include "imgui_impl_sdlrenderer3.h"
 #include "imsearch/imsearch.h"
 #include "日志.hpp"
+#include "时间.hpp"
+#include "渲染器.hpp"
+#include "窗口.hpp"
+#include "颜色.hpp"
 #include <memory>
 
 namespace 引擎::核心 {
@@ -63,8 +67,8 @@ bool 应用::初始化ImGui() {
     ImGui::GetStyle().FontScaleDpi = _显示比例; // 缩放字体
 
     // 设置平台/渲染器后端
-    ImGui_ImplSDL3_InitForSDLRenderer(_窗口->获取窗口(), _渲染器);
-    ImGui_ImplSDLRenderer3_Init(_渲染器);
+    ImGui_ImplSDL3_InitForSDLRenderer(_窗口->获取窗口(), _渲染器->获取渲染器());
+    ImGui_ImplSDLRenderer3_Init(_渲染器->获取渲染器());
 
     // 设置字体
     static constexpr int 字体大小 = 20;
@@ -123,22 +127,21 @@ bool 应用::是否已退出() { return _是否退出; }
   if (_窗口 == nullptr) {
     记录错误("无法创建窗口! SDL错误: {}", SDL_GetError());
   }
-  _渲染器 = SDL_CreateRenderer(_窗口->获取窗口(), nullptr);
+  _渲染器 = std::make_unique<渲染器>(*_窗口);
   if (_渲染器 == nullptr) {
-    spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
+    记录错误("无法创建渲染器! SDL错误: {}", SDL_GetError());
   }
   // 设置渲染器支持透明色
-  SDL_SetRenderDrawBlendMode(_渲染器, SDL_BLENDMODE_BLEND);
+  _渲染器->设置混合模式();
 
   // 设置 VSync (注意: VSync
   // 开启时，驱动程序会尝试将帧率限制到显示器刷新率，有可能会覆盖我们手动设置的
   // 目标帧率)
   auto vsync_mode = SDL_RENDERER_VSYNC_ADAPTIVE | SDL_RENDERER_VSYNC_DISABLED;
-  SDL_SetRenderVSync(_渲染器, vsync_mode); // 设置垂直同步
+  SDL_SetRenderVSync(_渲染器->获取渲染器(), vsync_mode); // 设置垂直同步
   // 记录跟踪(("VSync 设置为: {}", vsync_mode ? "Enabled" : "Disabled");
 
-  SDL_SetWindowPosition(_窗口->获取窗口(), SDL_WINDOWPOS_CENTERED,
-                        SDL_WINDOWPOS_CENTERED);
+  _窗口->居中();
 
   // ================= 添加DPI支持 =================
   // 1. 获取主显示器的DPI系数
@@ -148,7 +151,7 @@ bool 应用::是否已退出() { return _是否退出; }
   // 2. 获取显示比例
   _显示比例 = SDL_GetWindowDisplayScale(_窗口->获取窗口());
   记录信息("显示比例: {}", _显示比例);
-  SDL_ShowWindow(_窗口->获取窗口());
+  _窗口->显示();
 }
 void 应用::处理事件(SDL_Event &事件) {
 
@@ -176,16 +179,17 @@ void 应用::更新迭代(float 帧间隔时长) {
   ImSearch::ShowDemoWindow(); // 显示搜索示例窗口
   ImGui::ShowDemoWindow();    // 显示Dear ImGui示例窗口
 
-  SDL_SetRenderDrawColor(_渲染器, 0, 0, 0, 255); // 设置渲染背景色
-  SDL_RenderClear(_渲染器);                      // 清屏
+  _渲染器->设置清除颜色(颜色::墨灰());
+  _渲染器->清除画面(); // 清屏
 
   // 渲染呈现
   ImGui::Render();
 }
 
 void 应用::绘制画面() {
-  ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), _渲染器);
-  SDL_RenderPresent(_渲染器); // 渲染
+  ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(),
+                                        _渲染器->获取渲染器());
+  _渲染器->提交渲染();
 }
 
 void 应用::运行() {
@@ -203,8 +207,8 @@ void 应用::运行() {
   ImSearch::DestroyContext();
   ImGui::DestroyContext();
 
-  SDL_DestroyRenderer(_渲染器);
-  _窗口.reset(); // 销毁窗口
+  _渲染器.reset(); // 销毁渲染器
+  _窗口.reset();   // 销毁窗口
 
   SDL_Quit();
 }
