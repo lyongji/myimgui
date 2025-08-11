@@ -19,16 +19,12 @@ bool 应用::初始化() {
     try {
       _应用实例 = std::unique_ptr<应用>(new 应用());
       记录跟踪("应用实例创建成功。");
+      if (!_应用实例->执行组件初始化())
+        return false;
     } catch (const std::exception &e) {
       记录错误("创建应用实例失败: {}", e.what());
       return false;
     }
-    if (!_应用实例->初始化ImGui())
-      return false;
-
-    if (!_应用实例->初始化时间())
-      return false;
-
     记录信息("应用初始化成功。");
     return true;
   } else {
@@ -37,9 +33,14 @@ bool 应用::初始化() {
   }
 }
 
-bool 应用::初始化SDL() {
+bool 应用::执行组件初始化() {
+  if (!_应用实例->初始化ImGui())
+    return false;
 
-  记录跟踪("SDL初始化成功。");
+  if (!_应用实例->初始化时间())
+    return false;
+
+  记录跟踪("组件初始化成功。");
   return true;
 }
 bool 应用::初始化ImGui() {
@@ -62,7 +63,7 @@ bool 应用::初始化ImGui() {
     ImGui::GetStyle().FontScaleDpi = _显示比例; // 缩放字体
 
     // 设置平台/渲染器后端
-    ImGui_ImplSDL3_InitForSDLRenderer(_窗口, _渲染器);
+    ImGui_ImplSDL3_InitForSDLRenderer(_窗口->获取窗口(), _渲染器);
     ImGui_ImplSDLRenderer3_Init(_渲染器);
 
     // 设置字体
@@ -118,11 +119,11 @@ bool 应用::是否已退出() { return _是否退出; }
   // 创建窗口和渲染器
   Uint32 窗口标志 = SDL_WINDOW_RESIZABLE |
                     SDL_WINDOW_HIDDEN; //| SDL_WINDOW_HIGH_PIXEL_DENSITY;
-  _窗口 = SDL_CreateWindow("标题", 1080, 720, 窗口标志);
+  _窗口 = std::make_unique<窗口>("标题", 1080, 720, 窗口标志);
   if (_窗口 == nullptr) {
     记录错误("无法创建窗口! SDL错误: {}", SDL_GetError());
   }
-  _渲染器 = SDL_CreateRenderer(_窗口, nullptr);
+  _渲染器 = SDL_CreateRenderer(_窗口->获取窗口(), nullptr);
   if (_渲染器 == nullptr) {
     spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
   }
@@ -136,7 +137,8 @@ bool 应用::是否已退出() { return _是否退出; }
   SDL_SetRenderVSync(_渲染器, vsync_mode); // 设置垂直同步
   // 记录跟踪(("VSync 设置为: {}", vsync_mode ? "Enabled" : "Disabled");
 
-  SDL_SetWindowPosition(_窗口, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+  SDL_SetWindowPosition(_窗口->获取窗口(), SDL_WINDOWPOS_CENTERED,
+                        SDL_WINDOWPOS_CENTERED);
 
   // ================= 添加DPI支持 =================
   // 1. 获取主显示器的DPI系数
@@ -144,9 +146,9 @@ bool 应用::是否已退出() { return _是否退出; }
   float dpi系数 = SDL_GetDisplayContentScale(i);
   // _显示比例 = dpi系数;
   // 2. 获取显示比例
-  _显示比例 = SDL_GetWindowDisplayScale(_窗口);
+  _显示比例 = SDL_GetWindowDisplayScale(_窗口->获取窗口());
   记录信息("显示比例: {}", _显示比例);
-  SDL_ShowWindow(_窗口);
+  SDL_ShowWindow(_窗口->获取窗口());
 }
 void 应用::处理事件(SDL_Event &事件) {
 
@@ -154,7 +156,7 @@ void 应用::处理事件(SDL_Event &事件) {
   if (事件.type == SDL_EVENT_QUIT)
     _是否退出 = true;
   if (事件.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
-      事件.window.windowID == SDL_GetWindowID(_窗口))
+      事件.window.windowID == SDL_GetWindowID(_窗口->获取窗口()))
     _是否退出 = true;
 }
 void 应用::更新迭代(float 帧间隔时长) {
@@ -202,7 +204,7 @@ void 应用::运行() {
   ImGui::DestroyContext();
 
   SDL_DestroyRenderer(_渲染器);
-  SDL_DestroyWindow(_窗口);
+  _窗口.reset(); // 销毁窗口
 
   SDL_Quit();
 }

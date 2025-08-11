@@ -7,11 +7,11 @@
 
 namespace 引擎::核心 {
 
-窗口::窗口(const std::string &标题, int 宽度, int 高度) {
+窗口::窗口(const std::string &标题, int 宽度, int 高度, Uint32 flags) {
 #ifdef SDL_PLATFORM_ANDROID
   _窗口 = SDL_CreateWindow(标题.c_str(), 0, 0, 0);
 #else
-  _窗口 = SDL_CreateWindow(标题.c_str(), 宽度, 高度, SDL_WINDOW_RESIZABLE);
+  _窗口 = SDL_CreateWindow(标题.c_str(), 宽度, 高度, flags);
 #endif
   if (!_窗口) {
     记录错误("窗口创建失败:{}", SDL_GetError());
