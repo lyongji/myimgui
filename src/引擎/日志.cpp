@@ -1,5 +1,6 @@
 #include "日志.hpp"
 #include "SDL3/SDL.h"
+#include "iostream"
 #include "spdlog/sinks/android_sink.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/null_sink.h"
@@ -22,7 +23,7 @@
   try {
     _文件日志 = spdlog::basic_logger_mt("文件日志", "logs/log.txt");
   } catch (const spdlog::spdlog_ex &ex) {
-    std::println("日志初始化失败: {}", ex.what());
+    std::cout << "日志初始化失败: " << ex.what() << std::endl;
   }
 #endif
 }

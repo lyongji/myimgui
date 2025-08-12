@@ -1,4 +1,3 @@
-#pragma once
 
 #include "渲染器.hpp"
 #include "SDL3/SDL.h"

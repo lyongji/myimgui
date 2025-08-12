@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-set_languages("cxx23")
+set_languages("cxx20")
 set_encodings("utf-8")
 
 add_requires("imgui v1.92.1-docking",{configs= {sdl3 = true ,sdl3_renderer = true } })
