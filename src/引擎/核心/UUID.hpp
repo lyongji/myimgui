@@ -27,11 +27,30 @@ namespace 引擎::核心 {
 
 static_assert(std::atomic<std::uint64_t>::is_always_lock_free,
               "64位原子操作必须无锁，用于UUIDv7生成器");
-
-struct UUIDv7 {
+// uuid v7生成器
+struct UUID {
   std::array<std::uint8_t, 16> 字节数组{};
 
-  [[nodiscard]] std::string ToString() const {
+  // 默认构造函数：初始化为全零（空UUID）
+  UUID() noexcept { 字节数组.fill(0); }
+  // 静态函数：生成新的 UUID v7
+  static UUID 生成();
+  // 静态函数：生成指定数量的 UUID v7 ,有序列表
+  static std::vector<UUID> 批量生成(int count);
+  // 显式 bool 转换运算符：检查 UUID 是否非零（非空）
+  explicit operator bool() const noexcept {
+    for (const auto &字节 : 字节数组) {
+      if (字节 != 0)
+        return true;
+    }
+    return false;
+  }
+
+  // 检查是否为空（全零）UUID
+  [[nodiscard]] bool 是否为空() const noexcept {
+    return !static_cast<bool>(*this);
+  }
+  [[nodiscard]] std::string str() const {
     static constexpr char 十六进制字符[] = "0123456789abcdef";
     // 36字符字符串中每个字节的位置（考虑连字符）
     static constexpr int 位置[16] = {0,  2,  4,  6,  9,  11, 14, 16,
@@ -49,7 +68,6 @@ struct UUIDv7 {
     return {缓冲区.data(), 缓冲区.size()};
   }
 
-  // ================= 时间戳部分 =================
   // 获取时间戳部分（毫秒）
   [[nodiscard]] std::uint64_t 时间戳() const {
     std::uint64_t timestamp = 0;
@@ -59,77 +77,16 @@ struct UUIDv7 {
     return timestamp;
   }
 
-  // ================= 比较运算符 =================
   // 默认严格比较（全部16字节）
-  bool operator==(const UUIDv7 &other) const = default;
-  auto operator<=>(const UUIDv7 &other) const = default;
-
-  // 专用时间戳比较方法
-  [[nodiscard]] bool 同时间戳(const UUIDv7 &other) const noexcept {
-    return 时间戳() == other.时间戳();
-  }
-
-  [[nodiscard]] std::strong_ordering
-  比较时间戳(const UUIDv7 &other) const noexcept {
-    return 时间戳() <=> other.时间戳();
-  }
-
-  // ================= 排序方法 =================
-  // 按时间戳排序的静态方法
-  static std::vector<UUIDv7> 生成有序列表(int count) {
-    std::vector<UUIDv7> uuids;
-    uuids.reserve(count);
-
-    for (int i = 0; i < count; ++i) {
-      uuids.emplace_back();
-    }
-
-    // 使用时间戳比较进行排序
-    std::sort(uuids.begin(), uuids.end(), [](const UUIDv7 &a, const UUIDv7 &b) {
-      return a.比较时间戳(b) < 0;
-    });
-    return uuids;
-  }
-
-  // 按完整UUID排序的静态方法
-  static std::vector<UUIDv7> 生成严格有序列表(int count) {
-    std::vector<UUIDv7> uuids;
-    uuids.reserve(count);
-
-    for (int i = 0; i < count; ++i) {
-      uuids.emplace_back();
-    }
-
-    // 使用默认比较运算符排序（严格排序）
-    std::sort(uuids.begin(), uuids.end());
-    return uuids;
-  }
-
-  // // 静态方法：从字符串向量创建UUID向量
-  // static std::vector<UUIDv7>
-  // FromStrings(const std::vector<std::string> &strings) {
-  //   std::vector<UUIDv7> uuids;
-  //   uuids.reserve(strings.size());
-
-  //   for (const auto &str : strings) {
-  //     uuids.emplace_back(str);
-  //   }
-
-  //   return uuids;
-  // }
+  bool operator==(const UUID &other) const = default;
+  auto operator<=>(const UUID &other) const = default;
 };
 // 重载 << 运算符以便输出UUID
-inline std::ostream &operator<<(std::ostream &os, const UUIDv7 &uuid) {
-  return os << uuid.ToString();
+inline std::ostream &operator<<(std::ostream &os, const UUID &uuid) {
+  return os << uuid.str();
 }
 
-// 特化std::formatter以支持std::format（C++20）
-template <> struct std::formatter<UUIDv7> : std::formatter<std::string> {
-  auto format(const UUIDv7 &uuid, format_context &ctx) const {
-    return formatter<string>::format(uuid.ToString(), ctx);
-  }
-};
-
+//// UUIDv7生成器
 class UUIDv7生成器 {
 public:
   UUIDv7生成器() = default;
@@ -144,7 +101,7 @@ public:
   static constexpr std::uint16_t 序列掩码常量 = 0x0FFF; // 12位序列 (0-4095)
 
   // 返回UUID或空值（如果漂移/突发限制超出）
-  [[nodiscard]] std::optional<UUIDv7> 生成UUID();
+  [[nodiscard]] std::optional<UUID> 生成UUID();
 
   // 诊断：虚拟时钟漂移毫秒数（+ = 领先，- = 落后）
   [[nodiscard]] static std::int64_t 获取当前漂移毫秒() {
@@ -205,10 +162,10 @@ private:
     return 序列值;
   }
 
-  static UUIDv7 编码UUID(std::uint64_t 时间戳, std::uint16_t 序列);
+  static UUID 编码UUID(std::uint64_t 时间戳, std::uint16_t 序列);
 };
 
-inline std::optional<UUIDv7> UUIDv7生成器::生成UUID() {
+inline std::optional<UUID> UUIDv7生成器::生成UUID() {
   using clock = std::chrono::system_clock;
   std::uint64_t 实际时间毫秒 = 计算自纪元毫秒数(clock::now());
   unsigned 失败计数 = 0;
@@ -268,8 +225,8 @@ inline std::optional<UUIDv7> UUIDv7生成器::生成UUID() {
 }
 
 // 将时间戳和序列打包为RFC 9562 UUID v7格式
-inline UUIDv7 UUIDv7生成器::编码UUID(std::uint64_t 时间戳, std::uint16_t 序列) {
-  UUIDv7 UUID对象;
+inline UUID UUIDv7生成器::编码UUID(std::uint64_t 时间戳, std::uint16_t 序列) {
+  UUID UUID对象;
   auto *数据指针 = UUID对象.字节数组.data();
 
   // 48位大端时间戳（字节0-5）
@@ -320,8 +277,26 @@ inline std::atomic<std::uint64_t> UUIDv7生成器::全局状态{
      << 16) |
     detail::生成初始序列()};
 
+inline UUID UUID::生成() {
+  static UUIDv7生成器 生成器; // 静态生成器实例
+
+  std::optional<UUID> uuid_opt;
+  while (!(uuid_opt = 生成器.生成UUID())) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  return *uuid_opt;
+}
+inline std::vector<UUID> UUID::批量生成(int count) {
+  std::vector<UUID> uuids;
+  uuids.reserve(count);
+  for (int i = 0; i < count; ++i) {
+    uuids.push_back(生成());
+  }
+  return uuids;
+}
 inline thread_local UUIDv7生成器::线程本地存储结构 UUIDv7生成器::线程本地存储{};
 } // namespace 引擎::核心
+
 #if 0
 // 头文件UUID-v7生成器的最小演示
 #include <iostream>
