@@ -7,6 +7,9 @@
 #include <memory>
 
 // 前向声明, 减少头文件的依赖，增加编译速度
+// namespace 引擎::资源 {
+// class 资源管理器;
+// }
 
 namespace 引擎::核心 {
 class 时间;
@@ -18,8 +21,7 @@ namespace 引擎::核心 {
 class 应用 final {
 private:
   static std::unique_ptr<应用> _应用实例;
-  // SDL_Window *_窗口;
-  // SDL_Renderer *_渲染器;
+
   bool _是否退出 = false;
   float _显示比例 = 1.0f; // 显示比例，用于缩放窗口
 
@@ -27,6 +29,7 @@ private:
   std::unique_ptr<引擎::核心::时间> _时间;
   std::unique_ptr<引擎::核心::窗口> _窗口;
   std::unique_ptr<引擎::核心::渲染器> _渲染器;
+  // std::unique_ptr<引擎::资源::资源管理器> _资源管理器;
 
 public:
   [[nodiscard]] static bool 初始化();
@@ -56,5 +59,7 @@ private:
   [[nodiscard]] bool 执行组件初始化();
   [[nodiscard]] bool 初始化ImGui();
   [[nodiscard]] bool 初始化时间();
+  // [[nodiscard]] bool 初始化资源管理器();
+  // void 测试资源管理器();
 };
 } // namespace 引擎::核心

@@ -15,6 +15,7 @@ void 设置控制台编码_utf8() {
 /* 此函数在启动时运行一次。 */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
   设置控制台编码_utf8();
+  spdlog::set_level(spdlog::level::debug);
   if (!引擎::核心::应用::初始化()) {
     记录错误("初始化失败！");
   }

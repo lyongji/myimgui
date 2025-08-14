@@ -11,6 +11,7 @@
 #include "时间.hpp"
 #include "渲染器.hpp"
 #include "窗口.hpp"
+#include "资源管理器.hpp"
 #include "颜色.hpp"
 #include <memory>
 
@@ -38,12 +39,13 @@ bool 应用::初始化() {
 }
 
 bool 应用::执行组件初始化() {
+  // if (!_应用实例->初始化资源管理器())
+  //   return false;
   if (!_应用实例->初始化ImGui())
     return false;
-
   if (!_应用实例->初始化时间())
     return false;
-
+  // 测试资源管理器();
   记录跟踪("组件初始化成功。");
   return true;
 }
@@ -108,11 +110,18 @@ bool 应用::初始化时间() {
   记录跟踪("时间管理初始化成功。");
   return true;
 }
-应用 &应用::获取实例() { return *_应用实例; }
 
-void 应用::销毁实例() { _应用实例.reset(); }
-
-bool 应用::是否已退出() { return _是否退出; }
+// bool 应用::初始化资源管理器() {
+//   try {
+//     _资源管理器 =
+//         std::make_unique<引擎::资源::资源管理器>(_渲染器->获取渲染器());
+//   } catch (const std::exception &e) {
+//     记录错误("初始化资源管理器失败: {}", e.what());
+//     return false;
+//   }
+//   记录跟踪("资源管理器初始化成功。");
+//   return true;
+// }
 
 应用::应用() {
   // 初始化SDL
@@ -206,10 +215,26 @@ void 应用::运行() {
   ImGui_ImplSDL3_Shutdown();
   ImSearch::DestroyContext();
   ImGui::DestroyContext();
-
+  // _资源管理器.reset(); // 销毁资源管理器
   _渲染器.reset(); // 销毁渲染器
   _窗口.reset();   // 销毁窗口
-
   SDL_Quit();
 }
+
+应用 &应用::获取实例() { return *_应用实例; }
+
+void 应用::销毁实例() { _应用实例.reset(); }
+
+bool 应用::是否已退出() { return _是否退出; }
+// void 应用::测试资源管理器() {
+//   _资源管理器->获取纹理("D:/MyData/cpp/我的imgui/assets/tu.jpg");
+//   _资源管理器->获取音效("D:/MyData/cpp/我的imgui/assets/yin.wav");
+//   _资源管理器->获取字体(
+//       "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
+
+//   _资源管理器->卸载纹理("D:/MyData/cpp/我的imgui/assets/tu.jpg");
+//   _资源管理器->卸载音效("D:/MyData/cpp/我的imgui/assets/xm3776.wav");
+//   _资源管理器->卸载字体(
+//       "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
+// }
 } // namespace 引擎::核心
