@@ -82,8 +82,11 @@ bool 应用::初始化SDL() {
   }
 
   // 配置渲染器
-  // _渲染器->设置混合模式();
+  _渲染器->设置混合模式();
   SDL_SetRenderVSync(_渲染器->获取渲染器(), SDL_RENDERER_VSYNC_ADAPTIVE);
+  // SDL_SetRenderLogicalPresentation(_渲染器->获取渲染器(), 1080,
+  //                                  720, // 固定逻辑分辨率
+  //                                  SDL_LOGICAL_PRESENTATION_LETTERBOX);
   _窗口->居中();
 
   // DPI设置
@@ -180,16 +183,23 @@ void 应用::处理事件(SDL_Event &事件) {
       事件.window.windowID == SDL_GetWindowID(_窗口->获取窗口()))
     _是否退出 = true;
 }
-void 应用::更新迭代(float 帧间隔时长) {}
-
-void 应用::绘制画面() {
-
+void 应用::更新逻辑(float 帧间隔时长) {
+  // 更新游戏逻辑
+  // TODO: 在这里添加游戏逻辑更新代码
+}
+void 应用::更新UI() {
   // 开始Dear ImGui帧
   ImGui_ImplSDLRenderer3_NewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
-  /* 绘制 */
 
+  // 绘制UI
+  绘制UI();
+
+  // 渲染呈现
+  ImGui::Render();
+}
+void 应用::绘制UI() {
   ImGui::Begin(ICON_FA_BLENDER "窗口" ICON_FA_PEN "应用程序");
   ImGui::Text(ICON_FA_PEN " 帧率: %d FPS 每秒 (%.6f ms)", _时间->获取目标帧率(),
               _时间->获取无缩放帧间时长());
@@ -198,25 +208,28 @@ void 应用::绘制画面() {
 
   ImSearch::ShowDemoWindow(); // 显示搜索示例窗口
   ImGui::ShowDemoWindow();    // 显示Dear ImGui示例窗口
-
-  // 渲染呈现
-  ImGui::Render();
-
+}
+void 应用::绘制画面() {
+  // 设置渲染器缩放和清除颜色
   SDL_SetRenderScale(_渲染器->获取渲染器(),
                      ImGui::GetIO().DisplayFramebufferScale.x,
                      ImGui::GetIO().DisplayFramebufferScale.y);
   SDL_SetRenderDrawColor(_渲染器->获取渲染器(), 0, 0, 0, 255);
   SDL_RenderClear(_渲染器->获取渲染器());
+
+  // 渲染ImGui绘制数据
   ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(),
                                         _渲染器->获取渲染器());
 
+  // 呈现渲染结果
   SDL_RenderPresent(_渲染器->获取渲染器());
 }
 
 void 应用::运行() {
   _时间->更新();
   auto 帧间隔时长 = _时间->获取帧间时长();
-  更新迭代(帧间隔时长);
+  更新逻辑(帧间隔时长);
+  更新UI();
   绘制画面();
 }
 

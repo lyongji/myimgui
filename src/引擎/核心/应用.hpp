@@ -48,7 +48,8 @@ public:
 
   void 处理事件(SDL_Event &事件);
 
-  void 更新迭代(float 帧间隔时长);
+  void 更新逻辑(float 帧间隔时长);
+  void 更新UI();
 
   void 绘制画面();
 
@@ -61,6 +62,7 @@ private:
   [[nodiscard]] bool 初始化ImGui();
   [[nodiscard]] bool 初始化时间();
   void 关闭组件();
+  void 绘制UI();
   // [[nodiscard]] bool 初始化资源管理器();
   // void 测试资源管理器();
 };
