@@ -12,10 +12,10 @@ add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm","spdlog")
 
 
 add_links("SDL3_mixer")--链接SDL3_mixer.lib
-add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
+-- add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
 add_linkdirs("/lib")
 
-add_includedirs("include/","include/icon/","include/imsearch/","include/ib_pinyin/","include/imguiNodeEditor/")
+add_includedirs("include/","include/icon/","include/imsearch/","include/imguiNodeEditor/") --,"include/ib_pinyin/"
 add_includedirs("src/引擎","src/引擎/核心","src/引擎/资源")
 
 target("imsearch") --创建imsearch库
