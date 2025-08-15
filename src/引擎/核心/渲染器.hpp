@@ -18,6 +18,10 @@ public:
   ~渲染器();
 
   void 设置混合模式(SDL_BlendMode 模式 = SDL_BLENDMODE_BLEND);
+  void 设置Vsync(bool 启用 = true);
+  void 清屏(const 颜色 &颜色);
+  void 设置缩放(float x, float y);
+  void 渲染呈现();
 
   // void DrawLine(const glm::vec2 &p1, const glm::vec2 &p2, const 颜色 &颜色);
   // void DrawRect(const Rect &, const 颜色 &);

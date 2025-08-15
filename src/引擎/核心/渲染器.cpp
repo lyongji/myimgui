@@ -1,9 +1,11 @@
 
 #include "渲染器.hpp"
 #include "SDL3/SDL.h"
+#include "SDL3/SDL_render.h"
 #include "SDL调用.hpp"
 #include "日志.hpp"
 #include "窗口.hpp"
+#include "颜色.hpp"
 
 namespace 引擎::核心 {
 
@@ -27,8 +29,21 @@ namespace 引擎::核心 {
 //                float scale);
 
 SDL_Renderer *渲染器::获取渲染器() const { return _渲染器; }
-
+void 渲染器::清屏(const 颜色 &颜色) {
+  SDL_SetRenderDrawColor(_渲染器, static_cast<Uint8>(颜色.r() * 255),
+                         static_cast<Uint8>(颜色.g() * 255),
+                         static_cast<Uint8>(颜色.b() * 255),
+                         static_cast<Uint8>(颜色.a() * 255));
+  SDL_RenderClear(_渲染器);
+}
 void 渲染器::设置混合模式(SDL_BlendMode 模式) {
   SDL_SetRenderDrawBlendMode(_渲染器, 模式);
 }
+void 渲染器::设置Vsync(bool 启用) {
+  SDL_SetRenderVSync(_渲染器, 启用 ? SDL_RENDERER_VSYNC_ADAPTIVE
+                                   : SDL_RENDERER_VSYNC_DISABLED);
+}
+void 渲染器::设置缩放(float x, float y) { SDL_SetRenderScale(_渲染器, x, y); }
+void 渲染器::渲染呈现() { SDL_RenderPresent(_渲染器); }
+
 } // namespace 引擎::核心

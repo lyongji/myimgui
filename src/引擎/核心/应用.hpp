@@ -36,7 +36,7 @@ public:
   // 获取单例实例的静态方法
   static 应用 &获取实例();
   static void 销毁实例();
-  应用();
+
   ~应用();
 
   应用(const 应用 &) = delete;
@@ -56,6 +56,7 @@ public:
   bool 是否已退出();
 
 private:
+  应用(); // 私有构造函数，防止外部创建实例
   // 各模块的初始化/创建函数，在初始化()中调用
   [[nodiscard]] bool 执行组件初始化();
   [[nodiscard]] bool 初始化SDL();

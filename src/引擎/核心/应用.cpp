@@ -1,4 +1,5 @@
 #include "应用.hpp"
+#include "SDL3/SDL_blendmode.h"
 #include "SDL3/SDL_oldnames.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_stdinc.h"
@@ -43,6 +44,7 @@ bool 应用::执行组件初始化() {
   if (!获取实例().初始化时间())
     return false;
   // 测试资源管理器();
+
   记录跟踪("组件初始化成功。");
   return true;
 }
@@ -82,8 +84,9 @@ bool 应用::初始化SDL() {
   }
 
   // 配置渲染器
-  _渲染器->设置混合模式();
-  SDL_SetRenderVSync(_渲染器->获取渲染器(), SDL_RENDERER_VSYNC_ADAPTIVE);
+  _渲染器->设置混合模式(SDL_BLENDMODE_BLEND);
+  _渲染器->设置Vsync(true);
+
   // SDL_SetRenderLogicalPresentation(_渲染器->获取渲染器(), 1080,
   //                                  720, // 固定逻辑分辨率
   //                                  SDL_LOGICAL_PRESENTATION_LETTERBOX);
@@ -118,7 +121,9 @@ bool 应用::初始化ImGui() {
       ImGui::GetStyle().ScaleAllSizes(_显示比例); // 缩放所有样式元素
       ImGui::GetStyle().FontScaleDpi = _显示比例; // 缩放字体
     }
-
+    _渲染器->设置缩放(
+        ImGui::GetIO().DisplayFramebufferScale.x,
+        ImGui::GetIO().DisplayFramebufferScale.y); // 设置渲染器缩放
     // 设置平台/渲染器后端
     ImGui_ImplSDL3_InitForSDLRenderer(_窗口->获取窗口(), _渲染器->获取渲染器());
     ImGui_ImplSDLRenderer3_Init(_渲染器->获取渲染器());
@@ -210,19 +215,14 @@ void 应用::绘制UI() {
   ImGui::ShowDemoWindow();    // 显示Dear ImGui示例窗口
 }
 void 应用::绘制画面() {
-  // 设置渲染器缩放和清除颜色
-  SDL_SetRenderScale(_渲染器->获取渲染器(),
-                     ImGui::GetIO().DisplayFramebufferScale.x,
-                     ImGui::GetIO().DisplayFramebufferScale.y);
-  SDL_SetRenderDrawColor(_渲染器->获取渲染器(), 0, 0, 0, 255);
-  SDL_RenderClear(_渲染器->获取渲染器());
 
+  _渲染器->清屏(颜色::黝黑());
   // 渲染ImGui绘制数据
   ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(),
                                         _渲染器->获取渲染器());
 
   // 呈现渲染结果
-  SDL_RenderPresent(_渲染器->获取渲染器());
+  _渲染器->渲染呈现();
 }
 
 void 应用::运行() {
