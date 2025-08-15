@@ -17,7 +17,6 @@ public:
   渲染器 &operator=(渲染器 &&) = delete;
   ~渲染器();
 
-  void 设置清除颜色(const 颜色 &目标颜色);
   void 设置混合模式(SDL_BlendMode 模式 = SDL_BLENDMODE_BLEND);
 
   // void DrawLine(const glm::vec2 &p1, const glm::vec2 &p2, const 颜色 &颜色);
@@ -29,15 +28,9 @@ public:
   // void DrawTiled(const 图像 &, const Region &src, const Region &dst,
   //                float scale);
 
-  void 清除画面();
-  void 提交渲染();
-
   SDL_Renderer *获取渲染器() const;
 
 private:
   SDL_Renderer *_渲染器{};
-  SDL_Color _清除颜色;
-
-  void 设置渲染颜色(const 颜色 &颜色);
 };
 } // namespace 引擎::核心

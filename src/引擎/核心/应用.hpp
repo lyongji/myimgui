@@ -24,7 +24,7 @@ private:
 
   bool _是否退出 = false;
   float _显示比例 = 1.0f; // 显示比例，用于缩放窗口
-
+                          //
   // 各模块的指针，在初始化()中创建
   std::unique_ptr<引擎::核心::时间> _时间;
   std::unique_ptr<引擎::核心::窗口> _窗口;
@@ -33,9 +33,9 @@ private:
 
 public:
   [[nodiscard]] static bool 初始化();
-  static void 销毁实例();
+  // 获取单例实例的静态方法
   static 应用 &获取实例();
-
+  static void 销毁实例();
   应用();
   ~应用();
 
@@ -57,8 +57,10 @@ public:
 private:
   // 各模块的初始化/创建函数，在初始化()中调用
   [[nodiscard]] bool 执行组件初始化();
+  [[nodiscard]] bool 初始化SDL();
   [[nodiscard]] bool 初始化ImGui();
   [[nodiscard]] bool 初始化时间();
+  void 关闭组件();
   // [[nodiscard]] bool 初始化资源管理器();
   // void 测试资源管理器();
 };
