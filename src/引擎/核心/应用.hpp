@@ -7,15 +7,19 @@
 #include <memory>
 
 // 前向声明, 减少头文件的依赖，增加编译速度
-// namespace 引擎::资源 {
-// class 资源管理器;
-// }
+namespace 引擎::资源 {
+class 资源管理器;
+}
 
 namespace 引擎::核心 {
 class 时间;
 class 窗口;
-class 渲染器;
+
 } // namespace 引擎::核心
+namespace 引擎::渲染 {
+class 渲染器;
+
+}
 
 namespace 引擎::核心 {
 class 应用 final {
@@ -28,8 +32,8 @@ private:
   // 各模块的指针，在初始化()中创建
   std::unique_ptr<引擎::核心::时间> _时间;
   std::unique_ptr<引擎::核心::窗口> _窗口;
-  std::unique_ptr<引擎::核心::渲染器> _渲染器;
-  // std::unique_ptr<引擎::资源::资源管理器> _资源管理器;
+  std::unique_ptr<引擎::渲染::渲染器> _渲染器;
+  std::unique_ptr<引擎::资源::资源管理器> _资源管理器;
 
 public:
   [[nodiscard]] static bool 初始化();
@@ -62,9 +66,12 @@ private:
   [[nodiscard]] bool 初始化SDL();
   [[nodiscard]] bool 初始化ImGui();
   [[nodiscard]] bool 初始化时间();
+  [[nodiscard]] bool 初始化资源管理器();
   void 关闭组件();
   void 绘制UI();
-  // [[nodiscard]] bool 初始化资源管理器();
-  // void 测试资源管理器();
+  void 测试资源管理器();
+  void 测试纹理();
+  void 测试音频();
+  void 测试字体();
 };
 } // namespace 引擎::核心

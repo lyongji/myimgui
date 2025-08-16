@@ -3,14 +3,17 @@
 #include "SDL3/SDL.h"
 #include "窗口.hpp"
 
-namespace 引擎::核心 {
-
 class 图像;
+namespace 引擎::变量 {
 class 颜色;
+
+}
+
+namespace 引擎::渲染 {
 
 class 渲染器 {
 public:
-  explicit 渲染器(窗口 &窗口引用); // explicit 防止隐式转换
+  explicit 渲染器(核心::窗口 &窗口引用); // explicit 防止隐式转换
   渲染器(const 渲染器 &) = delete;
   渲染器 &operator=(const 渲染器 &) = delete;
   渲染器(渲染器 &&) = delete;
@@ -19,7 +22,7 @@ public:
 
   void 设置混合模式(SDL_BlendMode 模式 = SDL_BLENDMODE_BLEND);
   void 设置Vsync(bool 启用 = true);
-  void 清屏(const 颜色 &颜色);
+  void 清屏(const 变量::颜色 &颜色);
   void 设置缩放(float x, float y);
   void 渲染呈现();
 
@@ -37,4 +40,4 @@ public:
 private:
   SDL_Renderer *_渲染器{};
 };
-} // namespace 引擎::核心
+} // namespace 引擎::渲染

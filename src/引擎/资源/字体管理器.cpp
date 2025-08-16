@@ -58,7 +58,7 @@ TTF_Font *字体管理器::获取字体(std::string_view 路径, int 字号大�
     return it->second.get();
   }
 
-  spdlog::warn("字体 '{}' ({}pt) 不在缓存中，尝试加载。", 路径, 字号大小);
+  记录警告("字体 '{}' ({}pt) 不在缓存中，尝试加载。", 路径, 字号大小);
   return 载入字体(路径, 字号大小);
 }
 
@@ -69,7 +69,7 @@ void 字体管理器::卸载字体(std::string_view 路径, int 字号大小) {
     记录调试("卸载字体：{} ({}pt)", 路径, 字号大小);
     _字体池.erase(it); // unique_ptr 会处理 TTF_CloseFont
   } else {
-    spdlog::warn("尝试卸载不存在的字体：{} ({}pt)", 路径, 字号大小);
+    记录警告("尝试卸载不存在的字体：{} ({}pt)", 路径, 字号大小);
   }
 }
 

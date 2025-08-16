@@ -1,7 +1,7 @@
-#include "Path.hpp"
 #include "SDL3/SDL.h"
 #include "glm/ext/vector_float2.hpp"
 #include "日志.hpp"
+#include <string>
 
 namespace 引擎::资源 {
 /**
@@ -24,7 +24,8 @@ private:
   };
   // 存储文件路径和指向管理纹理的 unique_ptr
   // 的映射。(容器的键不可使用std::string_view)
-  std::unordered_map<Path, std::unique_ptr<SDL_Texture, SDLTexture删除器>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<SDL_Texture, SDLTexture删除器>>
       _纹理池;
 
   SDL_Renderer *_渲染器; // 指向主渲染器

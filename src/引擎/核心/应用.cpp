@@ -1,10 +1,7 @@
 #include "应用.hpp"
 #include "SDL3/SDL_blendmode.h"
-#include "SDL3/SDL_oldnames.h"
-#include "SDL3/SDL_render.h"
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_video.h"
-#include "SDL调用.hpp"
 #include "icon/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
@@ -37,27 +34,31 @@ bool 应用::初始化() {
 }
 
 bool 应用::执行组件初始化() {
-  if (!获取实例().初始化SDL())
+  if (!_应用实例->初始化SDL())
     return false;
-  if (!获取实例().初始化ImGui())
+  if (!_应用实例->初始化ImGui())
     return false;
-  if (!获取实例().初始化时间())
+  if (!_应用实例->初始化时间())
     return false;
-  // 测试资源管理器();
+  if (!_应用实例->初始化资源管理器())
+    return false;
 
+  测试资源管理器();
   记录跟踪("组件初始化成功。");
   return true;
 }
 
 void 应用::关闭组件() {
   // 按照依赖逆序关闭组件
-  _时间.reset();
+  _资源管理器->清空资源();
+  _资源管理器.reset(); // 销毁资源管理器
   // 是你的SDL_AppQuit()函数
   ImGui_ImplSDLRenderer3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
   ImSearch::DestroyContext();
   ImGui::DestroyContext();
-  // _资源管理器.reset(); // 销毁资源管理器
+
+  _时间.reset();   // 销毁时间
   _渲染器.reset(); // 销毁渲染器
   _窗口.reset();   // 销毁窗口
   SDL_Quit();
@@ -77,7 +78,7 @@ bool 应用::初始化SDL() {
     记录错误("无法创建窗口! SDL错误: {}", SDL_GetError());
     return false;
   }
-  _渲染器 = std::make_unique<渲染器>(*_窗口);
+  _渲染器 = std::make_unique<渲染::渲染器>(*_窗口);
   if (_渲染器 == nullptr) {
     记录错误("无法创建渲染器! SDL错误: {}", SDL_GetError());
     return false;
@@ -167,17 +168,18 @@ bool 应用::初始化时间() {
   return true;
 }
 
-// bool 应用::初始化资源管理器() {
-//   try {
-//     _资源管理器 =
-//         std::make_unique<引擎::资源::资源管理器>(_渲染器->获取渲染器());
-//   } catch (const std::exception &e) {
-//     记录错误("初始化资源管理器失败: {}", e.what());
-//     return false;
-//   }
-//   记录跟踪("资源管理器初始化成功。");
-//   return true;
-// }
+bool 应用::初始化资源管理器() {
+  try {
+    _资源管理器 =
+        std::make_unique<引擎::资源::资源管理器>(_渲染器->获取渲染器());
+  } catch (const std::exception &e) {
+    记录错误("初始化资源管理器失败: {}", e.what());
+    return false;
+  }
+
+  记录跟踪("资源管理器初始化成功。");
+  return true;
+}
 
 void 应用::处理事件(SDL_Event &事件) {
 
@@ -216,7 +218,7 @@ void 应用::绘制UI() {
 }
 void 应用::绘制画面() {
 
-  _渲染器->清屏(颜色::黝黑());
+  _渲染器->清屏(变量::颜色::黝黑());
   // 渲染ImGui绘制数据
   ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(),
                                         _渲染器->获取渲染器());
@@ -234,16 +236,25 @@ void 应用::运行() {
 }
 
 bool 应用::是否已退出() { return _是否退出; }
-// void 应用::测试资源管理器() {
-//   _资源管理器->获取纹理("D:/MyData/cpp/我的imgui/assets/tu.jpg");
-//   _资源管理器->获取音效("D:/MyData/cpp/我的imgui/assets/yin.wav");
-//   _资源管理器->获取字体(
-//       "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
+void 应用::测试资源管理器() {
+  测试纹理();
+  测试音频();
+  测试字体();
+}
 
-//   _资源管理器->卸载纹理("D:/MyData/cpp/我的imgui/assets/tu.jpg");
-//   _资源管理器->卸载音效("D:/MyData/cpp/我的imgui/assets/xm3776.wav");
-//   _资源管理器->卸载字体(
-//       "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
-// }
+void 应用::测试纹理() {
+  _资源管理器->获取纹理("D:/MyData/cpp/我的imgui/assets/Preview.png");
+  _资源管理器->卸载纹理("D:/MyData/cpp/我的imgui/assets/Preview.png");
+}
+void 应用::测试音频() {
+  _资源管理器->获取音效("D:/MyData/cpp/我的imgui/assets/button_click.wav");
+  _资源管理器->卸载音效("D:/MyData/cpp/我的imgui/assets/button_click.wav");
+}
+void 应用::测试字体() {
+  _资源管理器->获取字体(
+      "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
+  _资源管理器->卸载字体(
+      "D:/MyData/cpp/我的imgui/assets/MapleMono-NF-CN-Regular.ttf", 10);
+}
 
 } // namespace 引擎::核心

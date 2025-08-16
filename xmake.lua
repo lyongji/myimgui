@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 set_languages("cxx20")
 set_encodings("utf-8")
+-- set_runtimes("MD")  -- 或 "MT"
 
 add_requires("imgui v1.92.1-docking",{configs= {sdl3 = true ,sdl3_renderer = true } })
 add_requires("libsdl3","libsdl3_image")
@@ -11,12 +12,21 @@ add_requires("glm",{configs= {cxx_standard = "20" } })
 add_packages("libsdl3","imgui","libsdl3_image","libsdl3_ttf","glm","spdlog")
 
 
+add_linkdirs("lib")
 add_links("SDL3_mixer")--链接SDL3_mixer.lib
 -- add_links("ib_pinyin_c")--链接ib_pinyin_c.lib
-add_linkdirs("/lib")
+
+after_build(function (target)
+    os.cp("./lib", "$(builddir)/$(host)/$(arch)/$(mode)/")
+    print("$(builddir)/$(host)/$(arch)/$(mode)")
+end)
 
 add_includedirs("include/","include/icon/","include/imsearch/","include/imguiNodeEditor/") --,"include/ib_pinyin/"
-add_includedirs("src/引擎","src/引擎/核心","src/引擎/资源")
+add_includedirs("src/引擎")
+add_includedirs("src/引擎/核心")
+add_includedirs("src/引擎/渲染")
+add_includedirs("src/引擎/变量")
+add_includedirs("src/引擎/资源")
 
 target("imsearch") --创建imsearch库
     set_kind("static")

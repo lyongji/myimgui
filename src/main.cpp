@@ -1,8 +1,8 @@
 #include "spdlog/common.h"
-#include "日志.hpp"
+#include "引擎/日志.hpp"
 #define SDL_MAIN_USE_CALLBACKS 1 /* 使用回调函数而不是main() */
 #include "SDL3/SDL_init.h"
-#include "应用.hpp"
+#include "引擎/核心/应用.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <Windows.h>

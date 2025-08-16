@@ -47,8 +47,7 @@ Mix_Chunk *音频管理器::载入音效(std::string_view 路径) {
   }
 
   // 加载音效块
-  记录调试("加载音效: {}", 路径);
-  Mix_Chunk *原始音效 = Mix_LoadWAV(路径.data());
+  auto 原始音效 = Mix_LoadWAV(路径.data());
   if (!原始音效) {
     记录错误("加载音效失败: '{}': {}", 路径, SDL_GetError());
     return nullptr;

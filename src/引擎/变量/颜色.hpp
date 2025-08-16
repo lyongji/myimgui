@@ -8,7 +8,7 @@
 #include <format>
 #include <string>
 
-namespace 引擎::核心 {
+namespace 引擎::变量 {
 
 struct 颜色 {
   glm::vec4 rgba{0.0f, 0.0f, 0.0f, 1.0f}; // 默认为黑色，不透明
@@ -302,4 +302,4 @@ struct 颜色 {
   static 颜色 酡颜() { return {249, 144, 111}; }  /// HEX: #f9906f
 };
 
-} // namespace 引擎::核心
+} // namespace 引擎::变量
